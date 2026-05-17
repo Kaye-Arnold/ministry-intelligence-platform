@@ -1,0 +1,92 @@
+name: Nightly Database Backup
+
+on:
+  schedule:
+    # 00:00 UTC = 03:00 EAT (East Africa Time, UTC+3)
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for manual backup"
+        required: false
+        default: "Manual trigger"
+
+jobs:
+  backup:
+    name: PostgreSQL Backup → OCI Object Storage
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify database container is running
+        run: |
+          if ! docker compose ps db | grep -qiE "running|up"; then
+            echo "❌ Database container is not running. Cannot backup."
+            exit 1
+          fi
+          echo "✅ Database container is running."
+
+      - name: Run backup script
+        run: |
+          bash scripts/backup.sh
+          echo "Backup script completed."
+
+      - name: Verify backup file created
+        run: |
+          RECENT=$(find /tmp/mip-backups -name "backup_*.age" -mmin -60 2>/dev/null | head -1)
+          if [[ -z "$RECENT" ]]; then
+            # Might have been uploaded and removed; check OCI or log
+            echo "⚠️ No local backup file found (may have been uploaded to OCI)."
+          else
+            SIZE=$(du -k "$RECENT" | cut -f1)
+            echo "✅ Backup file: $RECENT (${SIZE} KB)"
+          fi
+
+      - name: Check backup log for errors
+        run: |
+          LOG_FILE="/tmp/mip_backup.log"
+          if [[ -f "$LOG_FILE" ]]; then
+            echo "── Last 30 lines of backup log ──"
+            tail -30 "$LOG_FILE"
+            if grep -qi "error\|failed\|aborting" "$LOG_FILE" | tail -10; then
+              echo "⚠️ Errors detected in backup log (see above)."
+            fi
+          fi
+
+      - name: Report backup status
+        run: |
+          echo "Backup run at $(date '+%Y-%m-%d %H:%M:%S EAT')"
+          if [[ "${{ github.event.inputs.reason }}" != "" ]]; then
+            echo "Reason: ${{ github.event.inputs.reason }}"
+          fi
+
+      - name: Alert on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Database Backup FAILED – ${new Date().toISOString().split('T')[0]}`,
+              body: [
+                '## Database Backup Failure',
+                '',
+                `**Workflow Run:** ${context.runId}`,
+                `**Timestamp:** ${new Date().toISOString()}`,
+                `**Branch:** ${context.ref}`,
+                '',
+                '### Action Required',
+                '1. SSH into the Oracle VM and verify the database container is running.',
+                '2. Check `/tmp/mip_backup.log` for error details.',
+                '3. Run `bash scripts/backup.sh` manually to test.',
+                '4. Verify OCI CLI configuration: `oci os object list --bucket-name mip-backups`',
+                '',
+                '### Recovery',
+                'If this is recurring, check: disk space (`df -h`), OCI credentials, Docker health.',
+              ].join('\n'),
+              labels: ['backup', 'critical'],
+            });

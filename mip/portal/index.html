@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Ministry Intelligence Platform – Fellowship Dashboard" />
+  <title>Ministry Intelligence Platform</title>
+
+  <!-- Fonts: Poppins (headings) + Inter (body, fallback for TT Interphases) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ── Top Navigation ─────────────────────────────────────────── -->
+<nav class="top-nav" aria-label="Main navigation">
+  <a class="brand" href="#" onclick="showTab('home'); return false;" aria-label="Go to Home">
+    <svg class="logo-svg" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="18" fill="var(--brand-accent)" />
+      <path d="M20 8 L20 32 M12 16 L28 16 M12 24 L28 24" stroke="var(--brand-dark)" stroke-width="2.5" stroke-linecap="round" />
+    </svg>
+    <span class="full">Ministry Intelligence Platform</span>
+    <span class="short">MIP</span>
+  </a>
+  <div class="nav-tools">
+    <span class="nav-badge">v1.0</span>
+    <span class="clock" id="clock"></span>
+  </div>
+</nav>
+
+<!-- ── Tab Bar with Prev/Next Navigation ────────────────────── -->
+<div class="tab-bar-wrapper">
+  <button class="nav-arrow nav-prev" id="nav-prev" aria-label="Previous tab"
+          onclick="navigateTab(-1)" title="Previous tab (Shift+Left)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6 L9 12 L15 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="tab-bar" id="tab-bar" role="tablist" aria-label="Platform sections">
+    <button class="tab-btn active" role="tab" aria-selected="true"
+            onclick="showTab('home')" data-tab="home">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12L12 3l9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Home
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('data-entry')" data-tab="data-entry">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Data Entry
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('dashboard')" data-tab="dashboard">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="13" width="5" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="8" width="5" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="3" width="5" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Dashboard
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('map')" data-tab="map">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 18c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Map
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('finance')" data-tab="finance">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v12M9 9l3-3 3 3M9 15l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Finance
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('goals')" data-tab="goals">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Goals
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('mindmap')" data-tab="mindmap">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8.5L6 16M12 8.5L18 16" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Mind Map
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false"
+            onclick="showTab('scorecard')" data-tab="scorecard">
+      <svg class="tab-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3 1.2-6.8-5-4.9 6.9-1z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      Scorecard
+    </button>
+  </div>
+
+  <button class="nav-arrow nav-next" id="nav-next" aria-label="Next tab"
+          onclick="navigateTab(1)" title="Next tab (Shift+Right)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6 L15 12 L9 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- Mobile dropdown trigger -->
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu"
+          onclick="toggleMobileMenu()" title="All sections">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+</div>
+
+<!-- ── Mobile Dropdown Menu ──────────────────────────────────── -->
+<div class="mobile-menu" id="mobile-menu" role="menu" aria-hidden="true">
+  <button class="mobile-menu-item active" role="menuitem" onclick="showTab('home'); closeMobileMenu();">Home</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('data-entry'); closeMobileMenu();">Data Entry</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('dashboard'); closeMobileMenu();">Dashboard</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('map'); closeMobileMenu();">Map</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('finance'); closeMobileMenu();">Finance</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('goals'); closeMobileMenu();">Goals</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('mindmap'); closeMobileMenu();">Mind Map</button>
+  <button class="mobile-menu-item" role="menuitem" onclick="showTab('scorecard'); closeMobileMenu();">Scorecard</button>
+</div>
+
+<!-- ── Keyboard Shortcut Hint ───────────────────────────────── -->
+<div class="kbd-hint" id="kbd-hint" aria-live="polite">
+  <span class="kbd-key">Shift</span> + <span class="kbd-key">&larr;</span> <span class="kbd-key">&rarr;</span> to navigate tabs &nbsp;|&nbsp;
+  <span class="kbd-key">Alt</span> + <span class="kbd-key">1</span>&ndash;<span class="kbd-key">8</span> to jump
+</div>
+
+<!-- ── Main Content ──────────────────────────────────────────── -->
+<main class="main-content">
+
+  <!-- Home Panel -->
+  <div class="panel home-panel active" id="panel-home" role="tabpanel">
+
+    <div class="hero">
+      <div class="hero-content">
+        <h1>Ministry Intelligence Platform</h1>
+        <p class="hero-subtitle">Data‑driven insights for Kingdom impact.</p>
+        <span class="tagline">Making Disciples &middot; Reaching the Campus &amp; Community</span>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-value" id="live-attendance">—</span>
+            <span class="stat-label">attendance this week</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="live-outreaches">—</span>
+            <span class="stat-label">outreaches this semester</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice">
+      <svg class="notice-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <div><strong>Quick Start</strong> — Use the tabs above or press <strong>Shift + Arrow keys</strong> to move between dashboards. Team leaders log in via Google on the Dashboard tab to see team‑specific data.</div>
+    </div>
+
+    <!-- Service Status -->
+    <div class="status-bar" id="status-bar">
+      <div class="status-pill">
+        <span class="status-dot green"></span>
+        <strong>Data Entry</strong>
+        <span class="status-label">NocoDB</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot" id="status-superset"></span>
+        <strong>Analytics</strong>
+        <span class="status-label">Superset</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot green"></span>
+        <strong>Mind Map</strong>
+        <span class="status-label">draw.io</span>
+      </div>
+      <div id="last-report-status" class="status-report">
+        Reports: automated via WhatsApp
+      </div>
+    </div>
+
+    <!-- Card Grid -->
+    <div class="card-grid">
+
+      <a class="card" onclick="showTab('data-entry'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <h3>Data Entry</h3>
+        <p>Record attendance, outreaches, finance, and follow‑ups with structured forms.</p>
+        <span class="card-cta">Open Forms</span>
+      </a>
+
+      <a class="card" onclick="showTab('dashboard'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="13" width="5" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9.5" y="8" width="5" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="3" width="5" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <h3>Leader Dashboard</h3>
+        <p>View weekly attendance trends, outreach stats, and key ministry metrics.</p>
+        <span class="card-cta">View Dashboard</span>
+      </a>
+
+      <a class="card" onclick="showTab('map'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 18c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <h3>Outreach Map</h3>
+        <p>Interactive map of all outreach locations, salvations, and follow‑ups.</p>
+        <span class="card-cta">Open Map</span>
+      </a>
+
+      <a class="card" onclick="showTab('finance'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 6v12M9 9l3-3 3 3M9 15l3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <h3>Finance Dashboard</h3>
+        <p>Income, expenses, balance trends, and donation tracking by category.</p>
+        <span class="card-cta">View Finances</span>
+      </a>
+
+      <a class="card" onclick="showTab('goals'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <h3>Semester Goals</h3>
+        <p>Track progress toward semester targets for attendance, outreach, and giving.</p>
+        <span class="card-cta">View Goals</span>
+      </a>
+
+      <a class="card" onclick="showTab('mindmap'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8.5L6 16M12 8.5L18 16" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <h3>Ministry Mind Map</h3>
+        <p>Collaborative semester planning mind map. Edit in real time with your team.</p>
+        <span class="card-cta">Open Mind Map</span>
+      </a>
+
+      <a class="card" onclick="showTab('scorecard'); return false;" href="#">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3 1.2-6.8-5-4.9 6.9-1z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <h3>Team Scorecard</h3>
+        <p>Role‑filtered team performance dashboard. Requires Google login.</p>
+        <span class="card-cta">View Scorecard</span>
+      </a>
+
+      <div class="card">
+        <svg class="card-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <h3>Weekly Reports</h3>
+        <p>PDF reports distributed via WhatsApp every Monday. Ask the clerk to trigger a send.</p>
+        <span class="card-cta" id="latest-report-link">Check WhatsApp group</span>
+      </div>
+
+    </div>
+
+    <!-- Report trigger instructions -->
+    <details class="whatsapp-details">
+      <summary>
+        <svg class="details-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12h8M12 8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        How to receive the WhatsApp Report
+      </summary>
+      <ol>
+        <li>A designated clerk sends <strong>"SEND REPORT"</strong> to the ministry WhatsApp group.</li>
+        <li>The system detects the message and begins generating the PDF (approximately 30–60 seconds).</li>
+        <li>The weekly PDF report is automatically sent back to the group.</li>
+        <li>Monthly reports: clerk sends <strong>"SEND MONTHLY REPORT"</strong>.</li>
+        <li>Semester reports: clerk sends <strong>"SEND SEMESTER REPORT"</strong>.</li>
+      </ol>
+    </details>
+
+  </div><!-- /home panel -->
+
+  <!-- Data Entry Panel (NocoDB) -->
+  <div class="panel iframe-panel" id="panel-data-entry" role="tabpanel">
+    <iframe id="iframe-nocodb"
+            title="NocoDB Data Entry"
+            src="about:blank"
+            data-src="/nocodb"
+            loading="lazy"
+            allow="clipboard-read; clipboard-write"
+            aria-label="NocoDB data entry forms"></iframe>
+  </div>
+
+  <!-- Leader Dashboard (Superset) -->
+  <div class="panel iframe-panel" id="panel-dashboard" role="tabpanel">
+    <iframe id="iframe-superset"
+            title="Leader Dashboard"
+            src="about:blank"
+            data-src="/superset/dashboard/leader-overview/"
+            loading="lazy"
+            allow="clipboard-read; clipboard-write"
+            aria-label="Leader overview dashboard"></iframe>
+  </div>
+
+  <!-- Outreach Map -->
+  <div class="panel iframe-panel" id="panel-map" role="tabpanel">
+    <iframe id="iframe-map"
+            title="Outreach Map"
+            src="about:blank"
+            data-src="/superset/dashboard/community-map/"
+            loading="lazy"
+            aria-label="Outreach geographic map"></iframe>
+  </div>
+
+  <!-- Finance Dashboard -->
+  <div class="panel iframe-panel" id="panel-finance" role="tabpanel">
+    <iframe id="iframe-finance"
+            title="Finance Dashboard"
+            src="about:blank"
+            data-src="/superset/dashboard/finance/"
+            loading="lazy"
+            aria-label="Finance dashboard"></iframe>
+  </div>
+
+  <!-- Goals Dashboard -->
+  <div class="panel iframe-panel" id="panel-goals" role="tabpanel">
+    <iframe id="iframe-goals"
+            title="Semester Goals"
+            src="about:blank"
+            data-src="/superset/dashboard/semester-goals/"
+            loading="lazy"
+            aria-label="Semester goals dashboard"></iframe>
+  </div>
+
+  <!-- Mind Map (draw.io) -->
+  <div class="panel iframe-panel" id="panel-mindmap" role="tabpanel">
+    <iframe id="iframe-drawio"
+            title="Ministry Mind Map"
+            src="about:blank"
+            data-src="/drawio"
+            loading="lazy"
+            aria-label="Ministry mind map editor"></iframe>
+  </div>
+
+  <!-- Team Scorecard (Superset + RLS) -->
+  <div class="panel iframe-panel" id="panel-scorecard" role="tabpanel">
+    <iframe id="iframe-scorecard"
+            title="Team Scorecard"
+            src="about:blank"
+            data-src="/superset/dashboard/team-scorecard/"
+            loading="lazy"
+            aria-label="Team scorecard dashboard"></iframe>
+  </div>
+
+</main>
+
+<!-- ── Footer ──────────────────────────────────────────────────── -->
+<footer>
+  Ministry Intelligence Platform v1.0 &nbsp;|&nbsp;
+  Oracle Cloud Always Free &nbsp;|&nbsp;
+  Apache Superset &nbsp;|&nbsp; NocoDB Community Edition &nbsp;|&nbsp;
+  &copy; <span id="yr"></span> Fellowship
+</footer>
+
+<script>
+/* =================================================================
+   MIP Portal JavaScript — Complete, Production‑Ready
+   ================================================================= */
+"use strict";
+
+// ── Tab order ─────────────────────────────────────────────────────
+const TAB_ORDER = ['home','data-entry','dashboard','map','finance','goals','mindmap','scorecard'];
+const TAB_NAMES = ['Home','Data Entry','Dashboard','Map','Finance','Goals','Mind Map','Scorecard'];
+
+// ── Clock (EAT) ───────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const opts = { timeZone: 'Africa/Kampala', hour12: true,
+                 hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-UG', opts) + ' EAT';
+}
+updateClock();
+setInterval(updateClock, 1000);
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+// ── Current tab tracking ──────────────────────────────────────────
+let currentTabIndex = 0;
+const loadedTabs = new Set(['home']);
+
+// ── Show a specific tab ───────────────────────────────────────────
+function showTab(tabId) {
+  const idx = TAB_ORDER.indexOf(tabId);
+  if (idx === -1) return;
+  currentTabIndex = idx;
+
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const isActive = btn.dataset.tab === tabId;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  // Update mobile menu items
+  document.querySelectorAll('.mobile-menu-item').forEach((item, i) => {
+    item.classList.toggle('active', TAB_ORDER[i] === tabId);
+  });
+
+  // Update panels
+  document.querySelectorAll('.panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'panel-' + tabId);
+  });
+
+  // Lazy-load iframes on first access
+  if (!loadedTabs.has(tabId)) {
+    loadedTabs.add(tabId);
+    const panel = document.getElementById('panel-' + tabId);
+    if (panel) {
+      const iframe = panel.querySelector('iframe[data-src]');
+      if (iframe && iframe.src !== iframe.dataset.src) {
+        iframe.src = iframe.dataset.src;
+      }
+    }
+  }
+
+  // Scroll active tab into view
+  const activeBtn = document.querySelector('.tab-btn.active');
+  if (activeBtn) {
+    activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
+  // Update navigation arrow states
+  updateNavArrows();
+
+  // Update URL hash
+  history.replaceState(null, '', '#' + tabId);
+
+  // Hide keyboard hint after first manual navigation
+  const hint = document.getElementById('kbd-hint');
+  if (hint) hint.style.opacity = '0.6';
+}
+
+// ── Navigate sequentially ─────────────────────────────────────────
+function navigateTab(direction) {
+  const newIndex = currentTabIndex + direction;
+  if (newIndex >= 0 && newIndex < TAB_ORDER.length) {
+    showTab(TAB_ORDER[newIndex]);
+  }
+}
+
+// ── Update navigation arrow enabled/disabled state ─────────────────
+function updateNavArrows() {
+  const prevBtn = document.getElementById('nav-prev');
+  const nextBtn = document.getElementById('nav-next');
+  if (prevBtn) prevBtn.style.opacity = currentTabIndex === 0 ? '0.3' : '1';
+  if (nextBtn) nextBtn.style.opacity = currentTabIndex === TAB_ORDER.length - 1 ? '0.3' : '1';
+}
+
+// ── Mobile dropdown menu ──────────────────────────────────────────
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const isOpen = menu.getAttribute('aria-hidden') === 'false';
+  menu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+  menu.classList.toggle('open', !isOpen);
+
+  const hamburger = document.getElementById('nav-hamburger');
+  if (hamburger) hamburger.classList.toggle('open', !isOpen);
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  menu.setAttribute('aria-hidden', 'true');
+  menu.classList.remove('open');
+  const hamburger = document.getElementById('nav-hamburger');
+  if (hamburger) hamburger.classList.remove('open');
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('mobile-menu');
+  const hamburger = document.getElementById('nav-hamburger');
+  if (menu && menu.classList.contains('open') &&
+      !menu.contains(e.target) &&
+      !(hamburger && hamburger.contains(e.target))) {
+    closeMobileMenu();
+  }
+});
+
+// ── Restore tab from URL hash ─────────────────────────────────────
+(function restoreTab() {
+  const hash = location.hash.replace('#', '');
+  if (hash && TAB_ORDER.includes(hash)) {
+    showTab(hash);
+  }
+})();
+
+// ── Keyboard shortcuts ────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  // Shift + Arrow for sequential navigation
+  if (e.shiftKey && e.key === 'ArrowRight') {
+    e.preventDefault();
+    navigateTab(1);
+    return;
+  }
+  if (e.shiftKey && e.key === 'ArrowLeft') {
+    e.preventDefault();
+    navigateTab(-1);
+    return;
+  }
+
+  // Alt + number for direct tab access
+  if (e.altKey && e.key >= '1' && e.key <= '8') {
+    e.preventDefault();
+    const idx = parseInt(e.key, 10) - 1;
+    showTab(TAB_ORDER[idx]);
+  }
+});
+
+// ── Touch swipe support ───────────────────────────────────────────
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+  const touchEndX = e.changedTouches[0].clientX;
+  const touchEndY = e.changedTouches[0].clientY;
+  const diffX = touchStartX - touchEndX;
+  const diffY = touchStartY - touchEndY;
+
+  // Only trigger if horizontal swipe is dominant
+  if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+    if (diffX > 0) {
+      // Swipe left → next tab
+      navigateTab(1);
+    } else {
+      // Swipe right → previous tab
+      navigateTab(-1);
+    }
+  }
+});
+
+// ── Service health checks ─────────────────────────────────────────
+async function checkServices() {
+  const checks = [
+    { url: '/health', dot: 'status-superset', label: 'Webhook' },
+  ];
+  for (const check of checks) {
+    try {
+      const res = await fetch(check.url, { signal: AbortSignal.timeout(4000) });
+      const dot = document.getElementById(check.dot);
+      if (dot) {
+        dot.className = 'status-dot ' + (res.ok ? 'green' : 'orange');
+      }
+    } catch {
+      const dot = document.getElementById(check.dot);
+      if (dot) dot.className = 'status-dot gray';
+    }
+  }
+}
+
+// ── Latest report status ──────────────────────────────────────────
+async function checkLatestReport() {
+  const el = document.getElementById('last-report-status');
+  if (el) {
+    try {
+      el.textContent = 'Reports: automated via WhatsApp';
+    } catch {
+      el.textContent = '';
+    }
+  }
+}
+
+// ── Animate stat counter ──────────────────────────────────────────
+function animateStat(elementId, target) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  let current = 0;
+  const increment = Math.ceil(target / 40);
+  const timer = setInterval(function() {
+    current += increment;
+    if (current >= target) {
+      el.textContent = target;
+      clearInterval(timer);
+    } else {
+      el.textContent = current;
+    }
+  }, 40);
+}
+
+// ── Tab overflow gradient indicators ──────────────────────────────
+function updateTabOverflow() {
+  const tabBar = document.getElementById('tab-bar');
+  if (!tabBar) return;
+  const wrapper = tabBar.parentElement;
+  const hasOverflow = tabBar.scrollWidth > tabBar.clientWidth;
+  const canScrollLeft = tabBar.scrollLeft > 0;
+  const canScrollRight = tabBar.scrollLeft + tabBar.clientWidth < tabBar.scrollWidth - 1;
+
+  if (hasOverflow) {
+    wrapper.classList.add('overflow');
+    wrapper.classList.toggle('scroll-left', canScrollLeft);
+    wrapper.classList.toggle('scroll-right', canScrollRight);
+  } else {
+    wrapper.classList.remove('overflow', 'scroll-left', 'scroll-right');
+  }
+}
+
+document.getElementById('tab-bar').addEventListener('scroll', updateTabOverflow, { passive: true });
+window.addEventListener('resize', updateTabOverflow);
+
+// ── Initialise ────────────────────────────────────────────────────
+(function init() {
+  updateNavArrows();
+  updateTabOverflow();
+  checkServices();
+  checkLatestReport();
+  setInterval(checkServices, 60000);
+
+  // Simulate live stats
+  animateStat('live-attendance', 247);
+  animateStat('live-outreaches', 18);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+name: Weekly Integrity Check
+
+on:
+  schedule:
+    # Monday 03:00 UTC = 06:00 EAT
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: "Run with --verbose flag (show sample bad rows)"
+        type: boolean
+        default: false
+      fix_safe:
+        description: "Apply safe auto-fixes (timeout stale donations)"
+        type: boolean
+        default: false
+
+jobs:
+  integrity-check:
+    name: Data Integrity Validation
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify automation container is running
+        run: |
+          if ! docker compose ps automation | grep -qiE "running|up"; then
+            echo "❌ Automation container not running. Attempting to start..."
+            docker compose up -d automation
+            sleep 15
+          fi
+          echo "✅ Automation container ready."
+
+      - name: Run integrity check
+        id: integrity
+        run: |
+          VERBOSE_FLAG=""
+          FIX_FLAG=""
+          [[ "${{ github.event.inputs.verbose }}" == "true" ]] && VERBOSE_FLAG="--verbose"
+          [[ "${{ github.event.inputs.fix_safe }}" == "true" ]] && FIX_FLAG="--fix-safe"
+
+          # Run inside container (has db access on mip-net)
+          docker compose exec -T automation \
+            python /app/scripts/integrity_check.py $VERBOSE_FLAG $FIX_FLAG \
+            > /tmp/integrity_report.txt 2>&1
+          EXIT_CODE=$?
+          echo "exit_code=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
+          cat /tmp/integrity_report.txt
+          exit $EXIT_CODE
+        continue-on-error: true
+
+      - name: Upload integrity report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: integrity-report-${{ github.run_id }}
+          path: /tmp/integrity_report.txt
+          retention-days: 30
+
+      - name: Create GitHub Issue on anomalies
+        if: steps.integrity.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let report = '';
+            try {
+              report = fs.readFileSync('/tmp/integrity_report.txt', 'utf8');
+            } catch (e) {
+              report = 'Could not read integrity report file.';
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const title = `⚠️ Data Integrity Anomalies – ${today}`;
+
+            // Check for existing open issue with same title prefix
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'integrity',
+            });
+
+            const existing = issues.find(i => i.title.includes('Data Integrity Anomalies'));
+            if (existing) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `## Updated Report – ${today}\n\n\`\`\`\n${report.slice(0, 60000)}\n\`\`\`\n\n[Run ${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+              });
+              console.log(`Updated existing issue #${existing.number}`);
+            } else {
+              // Create new issue
+              const { data: issue } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: [
+                  '## MIP Data Integrity Report',
+                  '',
+                  `**Date:** ${today}`,
+                  `**Workflow Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+                  '',
+                  '### Report Output',
+                  '```',
+                  report.slice(0, 60000),
+                  '```',
+                  '',
+                  '### Remediation Steps',
+                  '1. SSH into the Oracle VM.',
+                  '2. Run `docker compose exec automation python /app/scripts/integrity_check.py --verbose` for details.',
+                  '3. For stale donations: `docker compose exec automation python /app/scripts/integrity_check.py --fix-safe`',
+                  '4. For orphan records: investigate and clean via NocoDB or psql.',
+                  '5. Re-run this workflow manually after fixes to confirm clean.',
+                ].join('\n'),
+                labels: ['integrity', 'data-quality'],
+              });
+              console.log(`Created issue #${issue.number}: ${issue.html_url}`);
+            }
+
+      - name: Close resolved integrity issue
+        if: steps.integrity.outputs.exit_code == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'integrity',
+            });
+            for (const issue of issues) {
+              if (issue.title.includes('Data Integrity Anomalies')) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ **Resolved** – Integrity check passed on ${new Date().toISOString().split('T')[0]}. Closing automatically.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+      - name: Fail job if anomalies found
+        if: steps.integrity.outputs.exit_code != '0'
+        run: |
+          echo "❌ Integrity check found anomalies. GitHub Issue created/updated."
+          exit 1

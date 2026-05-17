@@ -1,0 +1,256 @@
+version: "3.9"
+
+# ============================================================
+# Ministry Intelligence Platform (MIP) – Docker Compose
+# Oracle Cloud Ampere A1 (ARM64) | Ubuntu 22.04
+# All services on internal mip-net; only Nginx exposed.
+# ============================================================
+
+x-superset-common: &superset-common
+  image: apache/superset:4.1.1
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  env_file: .env
+  environment:
+    DATABASE_DB: ${POSTGRES_DB}
+    DATABASE_HOST: db
+    DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+    DATABASE_USER: ${POSTGRES_USER}
+    DATABASE_PORT: 5432
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+    SUPERSET_ENV: production
+    GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+    GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+    DOMAIN: ${DOMAIN}
+    CHROME_URL: http://chrome:3000
+  volumes:
+    - ./superset/superset_config.py:/app/pythonpath/superset_config.py:ro
+    - superset_home:/app/superset_home
+    - ./superset/dashboards:/app/dashboards:ro
+  networks:
+    - mip-net
+  restart: unless-stopped
+
+services:
+
+  # ── PostgreSQL 16 ────────────────────────────────────────
+  db:
+    image: postgres:16
+    container_name: mip-db
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init_db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── Redis 7 ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: mip-redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── NocoDB Community Edition ─────────────────────────────
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: mip-nocodb
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      NC_DB: "pg://db:5432?u=${POSTGRES_USER}&p=${POSTGRES_PASSWORD}&d=${POSTGRES_DB}"
+      NC_AUTH_JWT_SECRET: ${NOCODB_JWT_SECRET}
+      NC_PUBLIC_URL: https://${DOMAIN}/nocodb
+      NC_DISABLE_TELE: "true"
+      NC_MINIMAL_DBS: "false"
+    volumes:
+      - nocodb_data:/usr/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── Apache Superset Web ──────────────────────────────────
+  superset:
+    <<: *superset-common
+    container_name: mip-superset
+    command: /bin/bash -c "superset run -h 0.0.0.0 -p 8088 --with-threads --reload --debugger"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+
+  # ── Superset Init (runs once to bootstrap) ───────────────
+  superset-init:
+    <<: *superset-common
+    container_name: mip-superset-init
+    command: /bin/bash /app/dashboards/init_superset.sh
+    depends_on:
+      superset:
+        condition: service_healthy
+    restart: "no"
+
+  # ── Superset Celery Worker ───────────────────────────────
+  superset-worker:
+    <<: *superset-common
+    container_name: mip-superset-worker
+    command: celery --app=superset.tasks.celery_app:app worker --loglevel=info -Q celery,reports
+    healthcheck:
+      test: ["CMD-SHELL", "celery --app=superset.tasks.celery_app:app inspect ping -d celery@$$HOSTNAME"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+
+  # ── Superset Celery Beat (scheduler) ────────────────────
+  superset-beat:
+    <<: *superset-common
+    container_name: mip-superset-beat
+    command: celery --app=superset.tasks.celery_app:app beat --loglevel=info
+    restart: unless-stopped
+
+  # ── Headless Chrome (for PDF export) ────────────────────
+  chrome:
+    image: browserless/chrome:latest
+    container_name: mip-chrome
+    environment:
+      CONNECTION_TIMEOUT: 600000
+      MAX_CONCURRENT_SESSIONS: 5
+      PREBOOT_CHROME: "true"
+      DEMO_MODE: "false"
+      ENABLE_DEBUGGER: "false"
+      DEFAULT_LAUNCH_ARGS: '["--no-sandbox","--disable-dev-shm-usage","--disable-gpu"]'
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── draw.io (Mind Map) ───────────────────────────────────
+  drawio:
+    image: jgraph/drawio:latest
+    container_name: mip-drawio
+    environment:
+      PUBLIC_DNS: ${DOMAIN}
+      DRAWIO_BASE_URL: https://${DOMAIN}/drawio
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── Automation (Flask webhook + Python scripts) ──────────
+  automation:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.automation
+    container_name: mip-automation
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./nocodb:/app/nocodb:ro
+      - reports_data:/app/reports
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      SUPERSET_URL: http://superset:8088
+      NOCODB_URL: http://nocodb:8080
+      NOCODB_ADMIN_EMAIL: ${NOCODB_ADMIN_EMAIL}
+      NOCODB_ADMIN_PASSWORD: ${NOCODB_ADMIN_PASSWORD}
+      DOMAIN: ${DOMAIN}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_GROUP_ID: ${WHATSAPP_GROUP_ID}
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET}
+      CURRENT_SEMESTER: ${CURRENT_SEMESTER}
+    ports:
+      - "127.0.0.1:5000:5000"
+    command: python /app/scripts/webhook_listener.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+  # ── Nginx (Reverse Proxy + Portal) ──────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: mip-nginx
+    depends_on:
+      - nocodb
+      - superset
+      - drawio
+      - automation
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/sites-enabled/mip.conf:/etc/nginx/templates/mip.conf.template:ro
+      - ./portal:/usr/share/nginx/portal:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - reports_data:/usr/share/nginx/html/reports:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - mip-net
+    restart: unless-stopped
+
+# ── Named Volumes ────────────────────────────────────────
+volumes:
+  pgdata:
+  redis_data:
+  nocodb_data:
+  superset_home:
+  reports_data:
+  nginx_logs:
+
+# ── Internal Network ─────────────────────────────────────
+networks:
+  mip-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

@@ -1,0 +1,15 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Donations & Giving",
+      "uuid": "84a5376a-f8b1-4fbb-aa07-7806f8eab168",
+      "published": true,
+      "css": "",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-don-kpis\", \"ROW-don-charts\", \"ROW-don-table\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-don-kpis\": {\"children\": [\"CHART-total-don\", \"CHART-pending-don\", \"CHART-donors\"], \"id\": \"ROW-don-kpis\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-total-don\": {\"id\": \"CHART-total-don\", \"meta\": {\"chartId\": 4001, \"height\": 120, \"sliceName\": \"Total Confirmed Donations\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-kpis\"], \"type\": \"CHART\"}, \"CHART-pending-don\": {\"id\": \"CHART-pending-don\", \"meta\": {\"chartId\": 4002, \"height\": 120, \"sliceName\": \"Pending Donations\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-kpis\"], \"type\": \"CHART\"}, \"CHART-donors\": {\"id\": \"CHART-donors\", \"meta\": {\"chartId\": 4003, \"height\": 120, \"sliceName\": \"Unique Donors\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-kpis\"], \"type\": \"CHART\"}, \"ROW-don-charts\": {\"children\": [\"CHART-cat-bar\", \"CHART-method-pie\"], \"id\": \"ROW-don-charts\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-cat-bar\": {\"id\": \"CHART-cat-bar\", \"meta\": {\"chartId\": 4004, \"height\": 300, \"sliceName\": \"Donations by Category\", \"width\": 7}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-charts\"], \"type\": \"CHART\"}, \"CHART-method-pie\": {\"id\": \"CHART-method-pie\", \"meta\": {\"chartId\": 4005, \"height\": 300, \"sliceName\": \"Payment Method Split\", \"width\": 5}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-charts\"], \"type\": \"CHART\"}, \"ROW-don-table\": {\"children\": [\"CHART-don-table\"], \"id\": \"ROW-don-table\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-don-table\": {\"id\": \"CHART-don-table\", \"meta\": {\"chartId\": 4006, \"height\": 300, \"sliceName\": \"Recent Donations\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-don-table\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 180}",
+      "metadata": {}
+    }
+  ],
+  "version": "1.0.0"
+}

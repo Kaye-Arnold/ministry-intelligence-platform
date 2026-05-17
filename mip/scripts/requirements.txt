@@ -1,0 +1,36 @@
+# MIP Automation Container – Python Dependencies
+# Pin minor versions for reproducibility; allow patch updates.
+
+# Web framework (webhook listener)
+Flask==3.0.3
+Werkzeug==3.0.3
+gunicorn==22.0.0
+
+# HTTP client (MTN/Airtel/WhatsApp API calls)
+requests==2.32.3
+urllib3==2.2.2
+
+# PostgreSQL driver
+psycopg2-binary==2.9.9
+
+# Environment variable loading
+python-dotenv==1.0.1
+
+# PDF generation (generate_report.py)
+reportlab==4.2.2
+Pillow==10.4.0
+
+# Date/time utilities
+python-dateutil==2.9.0
+
+# Data validation
+pydantic==2.7.4
+
+# Retry logic
+tenacity==8.3.0
+
+# Logging extras
+structlog==24.2.0
+
+# OCI SDK (for backup uploads to Oracle Object Storage)
+oci==2.129.3

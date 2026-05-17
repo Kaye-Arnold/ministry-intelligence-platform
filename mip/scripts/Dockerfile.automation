@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+LABEL maintainer="MIP System <admin@ministry.org>"
+LABEL description="MIP automation container: webhook listener, report generator, integrity checks"
+
+# ── System dependencies ───────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        wget \
+        git \
+        postgresql-client \
+        stress-ng \
+        age \
+        cron \
+        gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Working directory ─────────────────────────────────────────────
+WORKDIR /app
+
+# ── Python dependencies ───────────────────────────────────────────
+COPY scripts/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /app/requirements.txt
+
+# ── Application code ──────────────────────────────────────────────
+COPY scripts/ /app/scripts/
+COPY nocodb/  /app/nocodb/
+
+# ── Runtime directories ───────────────────────────────────────────
+RUN mkdir -p /app/reports /app/logs && \
+    chmod +x /app/scripts/backup.sh /app/scripts/keep_alive.sh
+
+# ── Healthcheck ──────────────────────────────────────────────────
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# ── Default command: webhook listener ────────────────────────────
+CMD ["python", "/app/scripts/webhook_listener.py"]

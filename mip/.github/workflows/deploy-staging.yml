@@ -1,0 +1,116 @@
+name: Deploy – Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force redeploy even if no changes"
+        type: boolean
+        default: false
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging (Oracle A1)
+    runs-on: self-hosted
+    environment: staging
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Verify .env exists
+        run: |
+          if [[ ! -f .env ]]; then
+            echo "ERROR: .env file not found on runner. Run setup.sh first."
+            exit 1
+          fi
+
+      - name: Pull latest Docker images
+        run: |
+          docker compose pull --quiet db redis nocodb drawio || true
+          echo "Docker pull complete."
+
+      - name: Build automation image
+        run: |
+          docker compose build --no-cache automation
+          echo "Automation image built."
+
+      - name: Apply database schema (idempotent)
+        run: |
+          docker compose up -d db
+          # Wait for db to be healthy
+          for i in $(seq 1 30); do
+            if docker compose exec -T db pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" 2>/dev/null; then
+              echo "Database ready."
+              break
+            fi
+            echo "Waiting for database... ($i/30)"
+            sleep 5
+          done
+          # Run schema (idempotent IF NOT EXISTS)
+          docker compose exec -T db psql \
+            -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+            -f /docker-entrypoint-initdb.d/01_init_db.sql || true
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+
+      - name: Deploy all services
+        run: |
+          docker compose up -d --remove-orphans
+          echo "Services started."
+
+      - name: Wait for services to stabilise
+        run: sleep 30
+
+      - name: Health checks
+        run: |
+          FAILURES=0
+
+          check_service() {
+            local name="$1"
+            local url="$2"
+            local expected="${3:-200}"
+            local code
+            code=$(curl -sf -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+            if [[ "$code" == "$expected" ]] || [[ "$code" == "200" ]] || [[ "$code" == "302" ]]; then
+              echo "✅ $name: OK ($code)"
+            else
+              echo "❌ $name: FAILED (got $code, expected $expected)"
+              FAILURES=$((FAILURES + 1))
+            fi
+          }
+
+          check_service "Superset"   "http://localhost:8088/health"
+          check_service "NocoDB"     "http://localhost:8080/api/v1/health"
+          check_service "Automation" "http://localhost:5000/health"
+          check_service "Nginx"      "http://localhost:80/" "301"
+
+          if [[ $FAILURES -gt 0 ]]; then
+            echo "❌ $FAILURES service(s) failed health checks."
+            docker compose logs --tail=50
+            exit 1
+          fi
+          echo "All services healthy."
+
+      - name: Run integrity check post-deploy
+        run: |
+          docker compose exec -T automation \
+            python /app/scripts/integrity_check.py || true
+          echo "Integrity check complete."
+
+      - name: Notify success
+        if: success()
+        run: echo "✅ Staging deploy complete at $(date)."
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Staging deploy FAILED at $(date)."
+          docker compose ps
+          docker compose logs --tail=100 2>&1 | tail -50

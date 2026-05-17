@@ -1,0 +1,15 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Finance Overview",
+      "uuid": "314f42fd-d9f5-4ee9-b7f4-e747b46eeb72",
+      "published": true,
+      "css": "",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-fin-kpis\", \"ROW-fin-charts\", \"ROW-fin-table\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-fin-kpis\": {\"children\": [\"CHART-income\", \"CHART-expense\", \"CHART-balance\"], \"id\": \"ROW-fin-kpis\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-income\": {\"id\": \"CHART-income\", \"meta\": {\"chartId\": 3001, \"height\": 120, \"sliceName\": \"Total Income (Month)\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-kpis\"], \"type\": \"CHART\"}, \"CHART-expense\": {\"id\": \"CHART-expense\", \"meta\": {\"chartId\": 3002, \"height\": 120, \"sliceName\": \"Total Expenses (Month)\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-kpis\"], \"type\": \"CHART\"}, \"CHART-balance\": {\"id\": \"CHART-balance\", \"meta\": {\"chartId\": 3003, \"height\": 120, \"sliceName\": \"Net Balance\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-kpis\"], \"type\": \"CHART\"}, \"ROW-fin-charts\": {\"children\": [\"CHART-inc-exp\", \"CHART-catpie\"], \"id\": \"ROW-fin-charts\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-inc-exp\": {\"id\": \"CHART-inc-exp\", \"meta\": {\"chartId\": 3004, \"height\": 300, \"sliceName\": \"Income vs Expense (Monthly)\", \"width\": 7}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-charts\"], \"type\": \"CHART\"}, \"CHART-catpie\": {\"id\": \"CHART-catpie\", \"meta\": {\"chartId\": 3005, \"height\": 300, \"sliceName\": \"Spending by Category\", \"width\": 5}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-charts\"], \"type\": \"CHART\"}, \"ROW-fin-table\": {\"children\": [\"CHART-fin-table\"], \"id\": \"ROW-fin-table\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-fin-table\": {\"id\": \"CHART-fin-table\", \"meta\": {\"chartId\": 3006, \"height\": 300, \"sliceName\": \"Recent Transactions\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-fin-table\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 300}",
+      "metadata": {}
+    }
+  ],
+  "version": "1.0.0"
+}

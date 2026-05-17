@@ -1,0 +1,15 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Semester Goals",
+      "uuid": "95939e1b-e025-4c92-bc4d-4613d624bba4",
+      "published": true,
+      "css": "",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-goals-header\", \"ROW-goals-bars\", \"ROW-goals-table\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-goals-header\": {\"children\": [\"HEADER-goals\"], \"id\": \"ROW-goals-header\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"HEADER-goals\": {\"id\": \"HEADER-goals\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\", \"headerSize\": \"MEDIUM_HEADER\", \"text\": \"Semester 2026-S1 Goals Progress\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-goals-header\"], \"type\": \"HEADER\"}, \"ROW-goals-bars\": {\"children\": [\"CHART-goals-progress\"], \"id\": \"ROW-goals-bars\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-goals-progress\": {\"id\": \"CHART-goals-progress\", \"meta\": {\"chartId\": 6001, \"height\": 400, \"sliceName\": \"Goals Progress Bars\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-goals-bars\"], \"type\": \"CHART\"}, \"ROW-goals-table\": {\"children\": [\"CHART-goals-table\", \"CHART-goals-vs\"], \"id\": \"ROW-goals-table\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-goals-table\": {\"id\": \"CHART-goals-table\", \"meta\": {\"chartId\": 6002, \"height\": 300, \"sliceName\": \"Goals Detail Table\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-goals-table\"], \"type\": \"CHART\"}, \"CHART-goals-vs\": {\"id\": \"CHART-goals-vs\", \"meta\": {\"chartId\": 6003, \"height\": 300, \"sliceName\": \"Actual vs Target (Bar)\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-goals-table\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 3600}",
+      "metadata": {}
+    }
+  ],
+  "version": "1.0.0"
+}

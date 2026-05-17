@@ -1,0 +1,15 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Community & Outreach Map",
+      "uuid": "0a60ed38-c717-4543-8fb0-0dcaf102153c",
+      "published": true,
+      "css": "",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-map\", \"ROW-stats\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-map\": {\"children\": [\"CHART-geo\"], \"id\": \"ROW-map\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-geo\": {\"id\": \"CHART-geo\", \"meta\": {\"chartId\": 2001, \"height\": 500, \"sliceName\": \"Outreach Locations Map\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-map\"], \"type\": \"CHART\"}, \"ROW-stats\": {\"children\": [\"CHART-people\", \"CHART-salvations\"], \"id\": \"ROW-stats\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-people\": {\"id\": \"CHART-people\", \"meta\": {\"chartId\": 2002, \"height\": 200, \"sliceName\": \"People Reached by Location\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-stats\"], \"type\": \"CHART\"}, \"CHART-salvations\": {\"id\": \"CHART-salvations\", \"meta\": {\"chartId\": 2003, \"height\": 200, \"sliceName\": \"Salvations by Activity Type\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-stats\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 600}",
+      "metadata": {}
+    }
+  ],
+  "version": "1.0.0"
+}

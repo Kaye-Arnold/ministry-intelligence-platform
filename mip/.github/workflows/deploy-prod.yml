@@ -1,0 +1,167 @@
+name: Deploy – Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to confirm production deployment"
+        required: true
+        type: string
+
+jobs:
+  # ── Guard: manual confirmation check ──────────────────────────
+  confirm-deployment:
+    name: Confirm production deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Check confirmation string
+        run: |
+          if [[ "${{ github.event.inputs.confirm }}" != "DEPLOY" ]]; then
+            echo "❌ Deployment not confirmed. Type 'DEPLOY' to proceed."
+            exit 1
+          fi
+          echo "✅ Deployment confirmed."
+
+  # ── Production deploy ─────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production (Oracle A1)
+    runs-on: self-hosted
+    environment: production   # Requires approval in GitHub repo settings → Environments
+    timeout-minutes: 30
+    needs: [confirm-deployment]
+    if: always() && (needs.confirm-deployment.result == 'success' || github.event_name == 'push')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          clean: true
+
+      - name: Verify prerequisites
+        run: |
+          [[ -f .env ]] || { echo "❌ .env missing"; exit 1; }
+          [[ -f /etc/letsencrypt/live/$(grep DOMAIN .env | cut -d= -f2)/fullchain.pem ]] \
+            && echo "✅ SSL certificates present" \
+            || echo "⚠️ SSL certificates may be missing – check certbot"
+          docker compose config --quiet && echo "✅ docker-compose.yml valid"
+
+      - name: Create timestamped pre-deploy backup
+        run: |
+          echo "Creating pre-deployment backup..."
+          bash scripts/backup.sh
+          echo "Pre-deploy backup complete."
+
+      - name: Pull latest Docker images
+        run: docker compose pull --quiet db redis nocodb drawio chrome drawio || true
+
+      - name: Build automation image
+        run: docker compose build --no-cache --pull automation
+
+      - name: Rolling service update
+        run: |
+          # Update non-critical services first
+          docker compose up -d db redis
+          sleep 15
+
+          # Apply schema idempotently
+          docker compose exec -T db psql \
+            -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" \
+            -f /docker-entrypoint-initdb.d/01_init_db.sql || true
+
+          # Update all services
+          docker compose up -d --remove-orphans
+          echo "All services updated."
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+
+      - name: Wait for full startup
+        run: |
+          echo "Waiting 60s for services to stabilise..."
+          sleep 60
+
+      - name: Comprehensive health checks
+        run: |
+          FAILURES=0
+          check() {
+            local name="$1" url="$2"
+            local code
+            code=$(curl -sf --max-time 10 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+            if [[ "$code" =~ ^(200|301|302|307|308)$ ]]; then
+              echo "  ✅ $name ($code)"
+            else
+              echo "  ❌ $name FAILED (HTTP $code)"
+              FAILURES=$((FAILURES + 1))
+            fi
+          }
+
+          echo "── Service health checks ──"
+          check "PostgreSQL"  "http://localhost:8080/api/v1/health"  # via nocodb check
+          check "NocoDB"      "http://localhost:8080/api/v1/health"
+          check "Superset"    "http://localhost:8088/health"
+          check "Automation"  "http://localhost:5000/health"
+          check "Nginx HTTP"  "http://localhost:80/"
+
+          if [[ $FAILURES -gt 0 ]]; then
+            echo ""
+            echo "❌ $FAILURES health check(s) failed. Rolling back..."
+            docker compose logs --tail=100 2>&1 | tail -80
+            exit 1
+          fi
+          echo ""
+          echo "✅ All services healthy."
+
+      - name: Run data integrity check
+        run: |
+          docker compose exec -T automation \
+            python /app/scripts/integrity_check.py
+          echo "Integrity check passed."
+
+      - name: Update NocoDB forms (idempotent)
+        run: |
+          docker compose exec -T automation \
+            python /app/scripts/../nocodb/init_nocodb.py || true
+
+      - name: Verify Superset dashboards
+        run: |
+          TOKEN=$(curl -sf -X POST http://localhost:8088/api/v1/security/login \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"${SUPERSET_ADMIN_USERNAME}\",\"password\":\"${SUPERSET_ADMIN_PASSWORD}\",\"provider\":\"db\"}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token','FAILED'))" 2>/dev/null || echo "FAILED")
+
+          if [[ "$TOKEN" == "FAILED" ]]; then
+            echo "⚠️ Could not authenticate to Superset (non-blocking)"
+          else
+            COUNT=$(curl -sf -H "Authorization: Bearer $TOKEN" \
+              http://localhost:8088/api/v1/dashboard/ 2>/dev/null \
+              | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
+            echo "✅ Superset dashboards available: $COUNT"
+          fi
+        env:
+          SUPERSET_ADMIN_USERNAME: ${{ env.SUPERSET_ADMIN_USERNAME }}
+          SUPERSET_ADMIN_PASSWORD: ${{ env.SUPERSET_ADMIN_PASSWORD }}
+
+      - name: Clean up old Docker images
+        run: docker image prune -f || true
+
+      - name: Deployment summary
+        run: |
+          echo "╔══════════════════════════════════════════╗"
+          echo "║  MIP PRODUCTION DEPLOY COMPLETE           ║"
+          echo "╠══════════════════════════════════════════╣"
+          echo "║  Timestamp: $(date '+%Y-%m-%d %H:%M:%S EAT')  ║"
+          echo "║  Commit:    ${{ github.sha }}     ║"
+          echo "╚══════════════════════════════════════════╝"
+          docker compose ps
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ PRODUCTION DEPLOYMENT FAILED"
+          echo "Commit: ${{ github.sha }}"
+          docker compose ps
+          docker compose logs --tail=200 2>&1 | tail -100

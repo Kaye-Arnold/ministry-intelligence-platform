@@ -1,0 +1,178 @@
+name: CI – Lint & Validate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ── Python lint ────────────────────────────────────────────────
+  python-lint:
+    name: Python (flake8 + black)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install linters
+        run: pip install flake8 black
+
+      - name: black (format check)
+        run: black --check --line-length 100 scripts/ nocodb/
+
+      - name: flake8
+        run: |
+          flake8 scripts/ nocodb/ \
+            --max-line-length 100 \
+            --extend-ignore E203,W503 \
+            --count --statistics
+
+  # ── Shell script lint ──────────────────────────────────────────
+  shell-lint:
+    name: Shell (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: shellcheck
+        run: |
+          shellcheck -x \
+            scripts/backup.sh \
+            scripts/keep_alive.sh \
+            superset/dashboards/init_superset.sh \
+            setup.sh
+
+  # ── YAML lint ──────────────────────────────────────────────────
+  yaml-lint:
+    name: YAML (yamllint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: yamllint
+        run: |
+          yamllint -d '{
+            extends: default,
+            rules: {
+              line-length: {max: 120},
+              comments: disable,
+              truthy: {allowed-values: ["true", "false"]}
+            }
+          }' \
+          docker-compose.yml \
+          .github/workflows/
+
+  # ── Docker Compose validation ──────────────────────────────────
+  compose-validate:
+    name: Docker Compose config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create stub .env
+        run: |
+          cp .env.example .env
+          # Replace all CHANGE_ME placeholders with safe test values
+          sed -i 's/CHANGE_ME[^=]*/TEST_VALUE/g' .env
+
+      - name: Validate docker-compose.yml
+        run: docker compose config --quiet
+
+  # ── SQL validation ─────────────────────────────────────────────
+  sql-validate:
+    name: SQL syntax check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ministry
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: ministry_db
+        options: >-
+          --health-cmd "pg_isready -U ministry -d ministry_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run schema against test PostgreSQL
+        env:
+          PGPASSWORD: testpass
+        run: |
+          psql -h localhost -U ministry -d ministry_db \
+               -f scripts/init_db.sql \
+               --set ON_ERROR_STOP=1
+          echo "Schema applied successfully."
+
+  # ── Python unit test (smoke) ───────────────────────────────────
+  python-smoke:
+    name: Python import smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies (without psycopg2-binary native compile)
+        run: |
+          pip install --quiet \
+            flask requests python-dotenv reportlab Pillow \
+            python-dateutil pydantic tenacity structlog
+
+      - name: Import smoke tests
+        env:
+          POSTGRES_HOST: "127.0.0.1"
+          POSTGRES_USER: ministry
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: ministry_db
+        run: |
+          # Verify each script is importable (syntax check)
+          python -c "import ast; ast.parse(open('scripts/webhook_listener.py').read()); print('webhook_listener.py OK')"
+          python -c "import ast; ast.parse(open('scripts/generate_report.py').read()); print('generate_report.py OK')"
+          python -c "import ast; ast.parse(open('scripts/integrity_check.py').read()); print('integrity_check.py OK')"
+          python -c "import ast; ast.parse(open('scripts/calculate_goals.py').read()); print('calculate_goals.py OK')"
+          python -c "import ast; ast.parse(open('scripts/donation_initiator.py').read()); print('donation_initiator.py OK')"
+          python -c "import ast; ast.parse(open('nocodb/init_nocodb.py').read()); print('init_nocodb.py OK')"
+
+  # ── Security: detect secrets in code ─────────────────────────
+  secret-scan:
+    name: Secret detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect hardcoded secrets
+        run: |
+          # Fail if any file (except .env.example) contains real-looking secrets
+          PATTERNS='(password|secret|token|apikey|api_key)\s*=\s*["\x27][^CHANGE_ME][^"\x27]{10,}'
+          if grep -rniE "$PATTERNS" \
+               --include="*.py" \
+               --include="*.sh" \
+               --include="*.yml" \
+               --include="*.json" \
+               --exclude-dir=".git" \
+               .; then
+            echo "WARNING: Potential hardcoded secrets found. Review output above."
+            # Non-blocking for now; enable 'exit 1' in production
+          else
+            echo "No hardcoded secrets detected."
+          fi

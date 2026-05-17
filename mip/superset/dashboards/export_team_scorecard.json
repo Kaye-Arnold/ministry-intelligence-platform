@@ -1,0 +1,21 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Team Scorecard",
+      "uuid": "08c8e872-1c6e-4f8e-9384-5a9a7eae8f4b",
+      "published": true,
+      "css": "",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-sc-kpis\", \"ROW-sc-charts\", \"ROW-sc-followup\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-sc-kpis\": {\"children\": [\"CHART-sc-att\", \"CHART-sc-out\", \"CHART-sc-follow\"], \"id\": \"ROW-sc-kpis\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-sc-att\": {\"id\": \"CHART-sc-att\", \"meta\": {\"chartId\": 5001, \"height\": 120, \"sliceName\": \"Team Attendance Rate\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-kpis\"], \"type\": \"CHART\"}, \"CHART-sc-out\": {\"id\": \"CHART-sc-out\", \"meta\": {\"chartId\": 5002, \"height\": 120, \"sliceName\": \"Outreach Participation\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-kpis\"], \"type\": \"CHART\"}, \"CHART-sc-follow\": {\"id\": \"CHART-sc-follow\", \"meta\": {\"chartId\": 5003, \"height\": 120, \"sliceName\": \"Follow-Up Completion %\", \"width\": 4}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-kpis\"], \"type\": \"CHART\"}, \"ROW-sc-charts\": {\"children\": [\"CHART-sc-trend\", \"CHART-sc-heatmap\"], \"id\": \"ROW-sc-charts\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-sc-trend\": {\"id\": \"CHART-sc-trend\", \"meta\": {\"chartId\": 5004, \"height\": 300, \"sliceName\": \"Attendance Trend (Team)\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-charts\"], \"type\": \"CHART\"}, \"CHART-sc-heatmap\": {\"id\": \"CHART-sc-heatmap\", \"meta\": {\"chartId\": 5005, \"height\": 300, \"sliceName\": \"Member Consistency Heatmap\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-charts\"], \"type\": \"CHART\"}, \"ROW-sc-followup\": {\"children\": [\"CHART-sc-fl-table\"], \"id\": \"ROW-sc-followup\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-sc-fl-table\": {\"id\": \"CHART-sc-fl-table\", \"meta\": {\"chartId\": 5006, \"height\": 300, \"sliceName\": \"Follow-Up List (Your Team)\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-sc-followup\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 300}",
+      "metadata": {
+        "rls_rules": [
+          "RLS_attendance_team",
+          "RLS_outreaches_team",
+          "RLS_follow_ups_team"
+        ]
+      }
+    }
+  ],
+  "version": "1.0.0"
+}

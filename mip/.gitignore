@@ -1,0 +1,67 @@
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+
+# =========================
+# Reports & Generated Files
+# =========================
+portal/reports/
+reports/
+*.pdf
+/tmp/
+tmp/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Database Dumps & Backups
+# =========================
+*.sql
+*.sql.gz
+*.sql.gz.age
+*.dump
+*.bak
+
+# =========================
+# Docker
+# =========================
+.docker/
+docker-data/
+*.pid
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db

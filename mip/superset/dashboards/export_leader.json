@@ -1,0 +1,38 @@
+{
+  "dashboards": [
+    {
+      "__type__": "Dashboard",
+      "dashboard_title": "MIP \u2013 Leader Overview",
+      "uuid": "295900d8-821a-41f1-8c3a-2722cb2d8124",
+      "published": true,
+      "css": ".header-title { color: #003366; font-weight: bold; }",
+      "position_json": "{\"DASHBOARD_VERSION_KEY\": \"v2\", \"ROOT_ID\": {\"children\": [\"GRID_ID\"], \"id\": \"ROOT_ID\", \"type\": \"ROOT\"}, \"GRID_ID\": {\"children\": [\"ROW-header\", \"ROW-kpis\", \"ROW-charts1\", \"ROW-charts2\"], \"id\": \"GRID_ID\", \"type\": \"GRID\", \"parents\": [\"ROOT_ID\"]}, \"ROW-header\": {\"children\": [\"HEADER-1\"], \"id\": \"ROW-header\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"HEADER-1\": {\"id\": \"HEADER-1\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\", \"headerSize\": \"MEDIUM_HEADER\", \"text\": \"Ministry Intelligence Platform \\u2013 Leader Dashboard\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-header\"], \"type\": \"HEADER\"}, \"ROW-kpis\": {\"children\": [\"CHART-kpi1\", \"CHART-kpi2\", \"CHART-kpi3\", \"CHART-kpi4\"], \"id\": \"ROW-kpis\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-kpi1\": {\"id\": \"CHART-kpi1\", \"meta\": {\"chartId\": 1001, \"height\": 120, \"sliceName\": \"This Week Present\", \"width\": 3}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-kpis\"], \"type\": \"CHART\"}, \"CHART-kpi2\": {\"id\": \"CHART-kpi2\", \"meta\": {\"chartId\": 1002, \"height\": 120, \"sliceName\": \"Total Members (Active)\", \"width\": 3}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-kpis\"], \"type\": \"CHART\"}, \"CHART-kpi3\": {\"id\": \"CHART-kpi3\", \"meta\": {\"chartId\": 1003, \"height\": 120, \"sliceName\": \"Outreaches This Month\", \"width\": 3}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-kpis\"], \"type\": \"CHART\"}, \"CHART-kpi4\": {\"id\": \"CHART-kpi4\", \"meta\": {\"chartId\": 1004, \"height\": 120, \"sliceName\": \"Pending Follow-Ups\", \"width\": 3}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-kpis\"], \"type\": \"CHART\"}, \"ROW-charts1\": {\"children\": [\"CHART-trend\", \"CHART-outreach\"], \"id\": \"ROW-charts1\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-trend\": {\"id\": \"CHART-trend\", \"meta\": {\"chartId\": 1005, \"height\": 240, \"sliceName\": \"Weekly Attendance Trend\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-charts1\"], \"type\": \"CHART\"}, \"CHART-outreach\": {\"id\": \"CHART-outreach\", \"meta\": {\"chartId\": 1006, \"height\": 240, \"sliceName\": \"Outreach Count by Type\", \"width\": 6}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-charts1\"], \"type\": \"CHART\"}, \"ROW-charts2\": {\"children\": [\"CHART-activities\"], \"id\": \"ROW-charts2\", \"meta\": {\"background\": \"BACKGROUND_TRANSPARENT\"}, \"parents\": [\"ROOT_ID\", \"GRID_ID\"], \"type\": \"ROW\"}, \"CHART-activities\": {\"id\": \"CHART-activities\", \"meta\": {\"chartId\": 1007, \"height\": 240, \"sliceName\": \"Upcoming Activities\", \"width\": 12}, \"parents\": [\"ROOT_ID\", \"GRID_ID\", \"ROW-charts2\"], \"type\": \"CHART\"}}",
+      "json_metadata": "{\"color_scheme\": \"supersetColors\", \"refresh_frequency\": 300}",
+      "metadata": {
+        "rls": [],
+        "native_filter_configuration": [
+          {
+            "id": "NATIVE_FILTER-date",
+            "controlValues": {
+              "enableEmptyFilter": false
+            },
+            "name": "Date Range",
+            "filterType": "filter_time",
+            "targets": [
+              {}
+            ],
+            "defaultValue": null,
+            "scope": {
+              "rootPath": [
+                "ROOT_ID"
+              ],
+              "excluded": []
+            },
+            "type": "NATIVE_FILTER"
+          }
+        ]
+      }
+    }
+  ],
+  "version": "1.0.0"
+}
